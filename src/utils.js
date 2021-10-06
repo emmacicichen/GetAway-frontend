@@ -1,4 +1,5 @@
-const domain = "http://localhost:8080";//can be changed to GCP url
+//const domain = "http://localhost:8080";//can be changed to GCP url
+const domain = "http://staybooking-326801.ue.r.appspot.com";
 
 export const login = (credential, asHost) => {//fetch is the global method, can be directly used. it takes url and config obj
     const loginUrl = `${domain}/authenticate/${asHost ? "host" : "guest"}`;
