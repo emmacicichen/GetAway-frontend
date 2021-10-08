@@ -2,6 +2,8 @@ import { Layout, Dropdown, Menu, Button } from "antd";
 import { UserOutlined } from "@ant-design/icons";
 import React from "react";
 import LoginPage from "./components/LoginPage";
+import HostHomePage from "./components/HostHomePage";
+
 
 const { Header, Content } = Layout;//destructure
 //const Header = Layout.Header
@@ -47,8 +49,9 @@ class App extends React.Component {
       }
       //if you are host, give the host home page
       if (this.state.asHost) {
-      return <div>host home page</div>;
-    }
+          return <HostHomePage />;
+      }
+
 //if you are guest, give the guest home page
     return <div>guest home page</div>;
   };
