@@ -2,7 +2,8 @@ import React from "react";
 import {Tabs, List, Carousel, Image, Card, message, Button, Tooltip, Space} from "antd";
 import {LeftCircleFilled, RightCircleFilled, InfoCircleOutlined,} from "@ant-design/icons";
 import Text from "antd/es/typography/Text";
-import {getStaysByHost} from "../utils";
+import { deleteStay, getReservationsByStay, getStaysByHost } from "../utils";
+
 import Modal from "antd/es/modal/Modal";
 const { TabPane } = Tabs;
 //import UploadStay from "./UploadStay";
@@ -84,8 +85,8 @@ class MyStays extends React.Component {
                                 </div>
                                 /*把text和button都放入flex box，得以用居中功能*/
                             }
-                            actions={[]}
-                            extra={null}
+                            actions={[<ViewReservationsButton stay={item}/>]}
+                            extra={<RemoveStayButton stay={item} onRemoveSuccess={() => this.loadData()} />}//给这个delete button单独搞一个component，decouple出来，让她自己有自己的state
                         >
                             {//每个card里的内容
                                 <Carousel
@@ -133,10 +134,11 @@ export class StayDetailInfoButton extends React.Component {
         const { modalVisible } = this.state;
         return (
             <>
+                {/*{//Fragments look like empty JSX tags. They let you group a list of children without adding extra nodes (wrap them in a <div>)to the DOM:}*/}
                 <Tooltip title="View Stay Details">
                     <Button
                         onClick={this.openModal}
-                        style={{ border: "none" }}
+                        style={{ border: "none" }}// The outer curly braces tell the JSX parser that the syntax should be interpreted as javascript. The inner braces are used because the style variable accepts an object.
                         size="large"
                         icon={<InfoCircleOutlined />}
                     />
@@ -164,6 +166,147 @@ export class StayDetailInfoButton extends React.Component {
         );
     }
 }
+
+class RemoveStayButton extends React.Component {
+    state = {
+        loading: false,
+    };
+
+    handleRemoveStay = async () => {
+        const { stay, onRemoveSuccess } = this.props;
+        this.setState({
+            loading: true,
+        });
+
+        try {
+            await deleteStay(stay.id);
+            onRemoveSuccess();
+        } catch (error) {
+            message.error(error.message);
+        } finally {
+            this.setState({
+                loading: false,
+            });
+        }
+
+    };
+    render() {
+        return (
+            <Button
+                loading={this.state.loading}
+                onClick={this.handleRemoveStay}
+                danger={true}//红色的
+                shape="round"
+                type="primary" //有背景色红色，文字白色
+            >
+                Remove Stay
+            </Button>
+        );
+    }
+}
+
+//show the customer info and reveration date
+class ReservationList extends React.Component {
+    state = {
+        loading: false,
+        reservations: [],
+    };
+
+    componentDidMount() {
+        this.loadData();
+    }
+
+    loadData = async () => {
+        this.setState({
+            loading: true,
+        });
+
+        try {
+            const resp = await getReservationsByStay(this.props.stayId);
+            this.setState({
+                reservations: resp,
+            });
+        } catch (error) {
+            message.error(error.message);
+        } finally {
+            this.setState({
+                loading: false,
+            });
+        }
+    };
+
+    render() {
+        const { loading, reservations } = this.state;
+
+        return (
+            <List
+                loading={loading}
+                dataSource={reservations}
+                renderItem={(item) => (
+                    <List.Item>
+                        <List.Item.Meta
+                            title={<Text>Guest Name: {item.guest.username}</Text>}
+                            description={
+                                <>
+                                    <Text>Checkin Date: {item.checkin_date}</Text>
+                                    <br />
+                                    <Text>Checkout Date: {item.checkout_date}</Text>
+                                </>
+                            }
+                        />
+                    </List.Item>
+                )}
+            />
+        );
+    }
+}
+
+class ViewReservationsButton extends React.Component {
+    state = {
+        modalVisible: false,
+    };
+
+    openModal = () => {
+        this.setState({
+            modalVisible: true,
+        });
+    };
+
+    handleCancel = () => {
+        this.setState({
+            modalVisible: false,
+        });
+    };
+
+    render() {
+        const { stay } = this.props;
+        const { modalVisible } = this.state;
+
+        const modalTitle = `Reservations of ${stay.name}`; //template string，在一串写死了的string中插入变量
+
+        return (
+            <>
+                <Button onClick={this.openModal} shape="round">
+                    View Reservations
+                </Button>
+                {modalVisible && (
+                    <Modal //弹窗， 下面是config这个modal
+                        title={modalTitle}
+                        centered={true}
+                        visible={modalVisible}
+                        closable={false}//是否显示右上角的小X
+                        footer={null}//不使用antd的footer.这样就没有那条分割线
+                        onCancel={this.handleCancel}
+                        destroyOnClose={true}//destroy the doms in the popup window
+                    >
+                        <ReservationList stayId={stay.id} />
+                    </Modal>
+                )}
+            </>
+        );
+    }
+}
+
 
 export default HostHomePage;
 
