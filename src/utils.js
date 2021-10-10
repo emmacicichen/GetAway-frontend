@@ -1,5 +1,6 @@
 //const domain = "http://localhost:8080";//can be changed to GCP url
 const domain = "http://staybooking-326801.ue.r.appspot.com";
+//https://staybooking-326801.ue.r.appspot.com
 
 export const login = (credential, asHost) => {//fetch is the global method, can be directly used. it takes url and config obj
     const loginUrl = `${domain}/authenticate/${asHost ? "host" : "guest"}`;
@@ -79,7 +80,7 @@ export const searchStays = (query) => {
         "checkout_date",
         query.checkout_date.format("YYYY-MM-DD")
     );
-    searchStaysUrl.searchParams.append("lat", 37);
+    searchStaysUrl.searchParams.append("lat", 37); //改经纬度！
     searchStaysUrl.searchParams.append("lon", -122);
 
     return fetch(searchStaysUrl, {

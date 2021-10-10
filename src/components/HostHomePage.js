@@ -5,6 +5,7 @@ import Text from "antd/es/typography/Text";
 import { deleteStay, getReservationsByStay, getStaysByHost } from "../utils";
 
 import Modal from "antd/es/modal/Modal";
+import UploadStay from "./UploadStay";
 const { TabPane } = Tabs;
 //import UploadStay from "./UploadStay";
 
@@ -18,7 +19,7 @@ class HostHomePage extends React.Component {
                     <MyStays />
                 </TabPane>
                 <TabPane tab="Upload Stay" key="2">
-                    <div>Upload Stays</div>
+                    <UploadStay />
                 </TabPane>
             </Tabs>
         );
